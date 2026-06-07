@@ -8,12 +8,12 @@ public class Main {
         ABB<Deposito> arbol = new ABB<>();
 
         // Agregar depósitos
-        arbol.agregar(new Deposito(10));
-        arbol.agregar(new Deposito(5));
-        arbol.agregar(new Deposito(15));
-        arbol.agregar(new Deposito(3));
-        arbol.agregar(new Deposito(7));
-        arbol.agregar(new Deposito(20));
+        arbol.insertar(new Deposito(10));
+        arbol.insertar(new Deposito(5));
+        arbol.insertar(new Deposito(15));
+        arbol.insertar(new Deposito(3));
+        arbol.insertar(new Deposito(7));
+        arbol.insertar(new Deposito(20));
 
         // Reporte por niveles
         System.out.println("=== REPORTE POR NIVELES ===");
