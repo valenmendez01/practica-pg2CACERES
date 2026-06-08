@@ -47,76 +47,6 @@ public class ABB<T extends Comparable<T>> {
     }
 
     // ---------------------------------------------------------------
-    // AUDITORÍA — recorrido post-orden
-    //
-    // Marca visitado=true en los nodos que NO fueron auditados en los
-    // últimos 30 días (es decir, fechaUltimaAuditoria es null, o está
-    // a más de 30 días del momento actual).
-    // ---------------------------------------------------------------
-
-    public void auditarPendientes() {
-        LocalDateTime hace30Dias = LocalDateTime.now().minusDays(30);
-        auditarPostOrden(raiz, hace30Dias);
-    }
-
-    private void auditarPostOrden(Nodo<T> nodo, LocalDateTime umbral) {
-        if (nodo == null) return;
-
-        // Post-orden: izquierda → derecha → raíz
-        auditarPostOrden(nodo.izq, umbral);
-        auditarPostOrden(nodo.der, umbral);
-
-        boolean necesitaAuditoria =
-                nodo.fechaUltimaAuditoria == null ||
-                        nodo.fechaUltimaAuditoria.isBefore(umbral);
-
-        if (necesitaAuditoria) {
-            nodo.visitado = true;
-            System.out.println("[AUDITORÍA] Depósito marcado: " + nodo.elemento);
-        }
-    }
-
-    // ---------------------------------------------------------------
-    // REPORTE POR NIVELES
-    //
-    // Imprime los nodos del nivel N (0 = raíz).
-    // ---------------------------------------------------------------
-
-    public void imprimirNivel(int nivel) {
-        List<Nodo<T>> nodosEnNivel = new ArrayList<>();
-        recolectarNivel(raiz, nivel, 0, nodosEnNivel);
-
-        if (nodosEnNivel.isEmpty()) {
-            System.out.println("Nivel " + nivel + ": (vacío)");
-        } else {
-            System.out.print("Nivel " + nivel + ": ");
-            for (Nodo<T> n : nodosEnNivel) {
-                System.out.print(n.elemento + "  ");
-            }
-            System.out.println();
-        }
-    }
-
-    private void recolectarNivel(Nodo<T> nodo, int nivelBuscado,
-                                 int nivelActual, List<Nodo<T>> lista) {
-        if (nodo == null) return;
-        if (nivelActual == nivelBuscado) {
-            lista.add(nodo);
-            return;
-        }
-        recolectarNivel(nodo.izq, nivelBuscado, nivelActual + 1, lista);
-        recolectarNivel(nodo.der, nivelBuscado, nivelActual + 1, lista);
-    }
-
-    /** Imprime todos los niveles del árbol de corrido. */
-    public void imprimirTodosLosNiveles() {
-        int h = altura(raiz);
-        for (int i = 0; i < h; i++) {
-            imprimirNivel(i);
-        }
-    }
-
-    // ---------------------------------------------------------------
     // EJERCICIOS
     // ---------------------------------------------------------------
     /*
@@ -313,51 +243,7 @@ public class ABB<T extends Comparable<T>> {
         return 1 + Math.max(altura(nodo.izq), altura(nodo.der));
     }
 
-    // Ejercicios
 
-    /*
-    Contar cantidad de nodos.
-    Contar cantidad de hojas.
-    Obtener el valor máximo del árbol.
-    Devolver el máximo de las hojas.
-    Contar nodos cuyo valor está dentro de un rango [min, max].
-    Devolver la longitud de la rama más corta desde la raíz a una hoja.
-    Cambiar el nodo actual con el mayor valor de sus hijos, siempre que ambos no sean nulos.
-     */
-
-    // Contar cantidad de nodos.
-
-    public int contarNodos(){
-        return contadorNodos(raiz);
-    }
-
-    private int contadorNodos(Nodo<T> nodo) {
-        if (nodo == null) return 0;
-        return 1 + contadorNodos(nodo.izq) + contadorNodos(nodo.der);
-    }
-
-    // Contar cantidad de hojas
-
-    public int contarHojas(){
-        return contarHojas(raiz);
-    }
-
-    private int contarHojas(Nodo<T> nodo) {
-        // Caso base
-        if (nodo == null) return 0;
-        if (nodo.izq == null && nodo.der == null) return 1;
-        // Caso recursivo
-        return contarHojas(nodo.der) + contarHojas(nodo.izq);
-    }
-
-    // Devolver el máximo de las hojas
-
-
-    // Contar nodos cuyo valor está dentro de un rango [min, max].
-
-    // Devolver la longitud de la rama más corta desde la raíz a una hoja.
-
-    // Cambiar el nodo actual con el mayor valor de sus hijos, siempre que ambos no sean nulos.
 
 }
 

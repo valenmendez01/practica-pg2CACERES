@@ -1,0 +1,13 @@
+Preguntas Teóricas
+
+1. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un árbol binario (sin orden)? Justifica tu respuesta.
+
+2. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un ABB balanceado? ¿Por qué mejora respecto al caso anterior?
+
+3. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un ABB desbalanceado (peor caso)? ¿Cuándo ocurre este escenario?
+
+4. [Grafos] ¿Qué es un grafo ponderado? Dá un ejemplo aplicado al sistema LogiUADE.
+
+5. [Grafos] ¿Qué es el recorrido BFS? ¿Qué estructura de datos auxiliar utiliza y por qué?
+
+6. [Grafos] ¿Qué es el recorrido DFS? ¿Qué estructura de datos auxiliar utiliza y por qué?

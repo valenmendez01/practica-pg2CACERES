@@ -208,4 +208,67 @@ public class GrafoDepositos {
     public Set<Integer> getVertices() {
         return Collections.unmodifiableSet(listaAdyacencia.keySet());
     }
+
+    // Ejercicios
+
+    /*
+    [BFS] G1. Recorrido BFS desde un depósito
+    Implementá un recorrido BFS desde un idDeposito dado e imprimí el orden de visita.
+    Nota: Marcá los nodos visitados para evitar ciclos. Indicá la complejidad.
+     */
+
+    /*
+    [BFS] G2. Cantidad de saltos entre depósitos
+    Implementá cantidadSaltos(int origen, int destino) que retorne la cantidad mínima de saltos entre dos depósitos.
+    Nota: BFS garantiza el mínimo de saltos. ¿Por qué DFS no lo garantiza?
+     */
+
+    /*
+    [BFS] G3. Depósitos a distancia N saltos
+    Implementá depositosADistancia(int origen, int n) que retorne todos los depósitos a exactamente N saltos del origen.
+    Nota: Usá BFS con control de nivel. ¿Cuál es la complejidad en V y E?
+     */
+
+    /*
+    [BFS] G4. Verificar conexión entre depósitos
+    Implementá estaConectado(int origen, int destino) que retorne true si existe algún camino entre los dos depósitos.
+    Nota: ¿Qué representa que el grafo no sea conexo en el contexto logístico?
+     */
+
+    /*
+    [BFS] G5. Camino más corto con distancia
+    Extendé cantidadSaltos para que, en un grafo ponderado, retorne la distancia mínima en km entre dos depósitos (Dijkstra simplificado con cola de prioridad).
+    Nota: ¿Qué diferencia hay entre minimizar saltos y minimizar distancia?
+     */
+
+    /*
+    [DFS] G6. Recorrido DFS desde un depósito
+    Implementá un recorrido DFS (iterativo con Stack o recursivo) desde un idDeposito dado e imprimí el orden de visita.
+    Nota: ¿En qué se diferencia el orden de visita respecto al BFS?
+     */
+
+    /*
+    [DFS] G7. Detectar ciclo en el grafo
+    Implementá tieneCiclo() que retorne true si el grafo contiene algún ciclo, usando DFS.
+    Nota: Usá tres estados: NO_VISITADO, EN_PROCESO, VISITADO.
+     */
+
+    /*
+    [DFS] G8. Imprimir todos los caminos
+    Implementá imprimirCaminos(int origen, int destino) que imprima todos los caminos simples entre dos depósitos usando DFS con backtracking.
+    Nota: Usá una lista para acumular el camino actual y backtrack al salir.
+     */
+
+    /*
+    [DFS] G9. Verificar si el grafo es conexo
+    Implementá esConexo() que retorne true si todos los depósitos son alcanzables desde cualquier nodo inicial.
+    Nota: Si visitados == total de nodos → conexo.
+     */
+
+    /*
+    [DFS] G10. Componentes conexas
+    Implementá cantidadComponentesConexas() que retorne cuántas componentes conexas tiene el grafo.
+    Nota: Iterar sobre nodos no visitados y lanzar DFS desde cada uno.
+     */
+
 }
