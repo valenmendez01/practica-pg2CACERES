@@ -1,274 +1,196 @@
 package TDAs;
 
-import java.util.*;
+import model.Deposito;
 
-/**
- * Grafo no dirigido con pesos que modela la red de rutas entre depósitos.
- * Utiliza lista de adyacencia. Implementa Dijkstra para distancia mínima.
- */
+ // Cada vértice representa un Deposito (identificado por su id).
+ // Cada arista representa una ruta con una distancia (peso) entre dos depósitos.
+
 public class GrafoDepositos {
 
-    // ─────────────────────────────────────────────
-    //  Estructuras internas
-    // ─────────────────────────────────────────────
+    // Clases internas de la estructura
 
-    /** Representa una arista: destino + peso (km o saltos). */
-    private static class Arista {
-        final int destino;
-        final int peso;
-
-        Arista(int destino, int peso) {
-            this.destino = destino;
-            this.peso = peso;
-        }
+    private static class NodoGrafo {
+        Deposito deposito;
+        NodoArista arista;
+        NodoGrafo sigNodo;
     }
 
-    /** Nodo auxiliar para la cola de prioridad de Dijkstra. */
-    private static class NodoDijkstra implements Comparable<NodoDijkstra> {
-        final int id;
-        final int distancia;
-
-        NodoDijkstra(int id, int distancia) {
-            this.id = id;
-            this.distancia = distancia;
-        }
-
-        @Override
-        public int compareTo(NodoDijkstra otro) {
-            return Integer.compare(this.distancia, otro.distancia);
-        }
+    private static class NodoArista {
+        int distancia;          // peso de la ruta (distancia en km, etc.)
+        NodoGrafo nodoDestino;
+        NodoArista sigArista;
     }
 
-    // ─────────────────────────────────────────────
-    //  Estado del grafo
-    // ─────────────────────────────────────────────
+    // Inicialización
 
-    private final Map<Integer, List<Arista>> listaAdyacencia;
+    private NodoGrafo origen; // referencia al primer vértice de la lista de vértices
 
     public GrafoDepositos() {
-        this.listaAdyacencia = new HashMap<>();
+        origen = null;
     }
 
-    // ─────────────────────────────────────────────
-    //  Construcción
-    // ─────────────────────────────────────────────
+    // Operaciones sobre vértices
 
-    /** Agrega un vértice (depósito) al grafo si no existe. */
-    public void agregarVertice(int idDeposito) {
-        listaAdyacencia.putIfAbsent(idDeposito, new ArrayList<>());
+    public void agregarDeposito(Deposito dep) {
+        NodoGrafo aux = new NodoGrafo();
+        aux.deposito = dep;
+        aux.arista = null;
+        aux.sigNodo = origen;
+        origen = aux;
     }
 
     /**
-     * Agrega una ruta bidireccional entre dos depósitos.
-     *
-     * @param origen  ID del depósito origen
-     * @param destino ID del depósito destino
-     * @param peso    distancia en km (o número de saltos si peso = 1)
+     * Elimina el vértice correspondiente al depósito con el id dado,
+     * y también elimina todas las aristas que apunten hacia él.
      */
-    public void agregarRuta(int origen, int destino, int peso) {
-        agregarVertice(origen);
-        agregarVertice(destino);
-        listaAdyacencia.get(origen).add(new Arista(destino, peso));
-        listaAdyacencia.get(destino).add(new Arista(origen, peso));
-    }
+    public void eliminarDeposito(int idDeposito) {
+        // Caso especial: el vértice a eliminar es el primero
+        if (origen != null && origen.deposito.getId() == idDeposito)
+            origen = origen.sigNodo;
 
-    // ─────────────────────────────────────────────
-    //  Algoritmo de Dijkstra
-    // ─────────────────────────────────────────────
-
-    /**
-     * Calcula la distancia mínima (en km) entre dos depósitos usando Dijkstra.
-     *
-     * @param origen  ID del depósito de partida
-     * @param destino ID del depósito de llegada
-     * @return distancia mínima, o -1 si no hay camino
-     */
-    public int distanciaMinima(int origen, int destino) {
-        validarVertice(origen);
-        validarVertice(destino);
-
-        Map<Integer, Integer> distancias = inicializarDistancias(origen);
-        PriorityQueue<NodoDijkstra> colaPrioridad = new PriorityQueue<>();
-        colaPrioridad.offer(new NodoDijkstra(origen, 0));
-
-        while (!colaPrioridad.isEmpty()) {
-            NodoDijkstra actual = colaPrioridad.poll();
-
-            if (actual.distancia > distancias.get(actual.id)) continue;
-            if (actual.id == destino) break;
-
-            relajarVecinos(actual, distancias, colaPrioridad);
+        NodoGrafo aux = origen;
+        while (aux != null) {
+            // Elimina toda arista que apunte al depósito eliminado
+            eliminarAristaNodo(aux, idDeposito);
+            // Elimina el nodo de la lista si es el siguiente
+            if (aux.sigNodo != null && aux.sigNodo.deposito.getId() == idDeposito)
+                aux.sigNodo = aux.sigNodo.sigNodo;
+            aux = aux.sigNodo;
         }
-
-        int resultado = distancias.get(destino);
-        return resultado == Integer.MAX_VALUE ? -1 : resultado;
     }
 
     /**
-     * Calcula el camino mínimo y retorna la secuencia de IDs de depósitos.
-     *
-     * @param origen  ID del depósito de partida
-     * @param destino ID del depósito de llegada
-     * @return lista ordenada de IDs que forman el camino, vacía si no hay camino
+     * Devuelve true si existe un vértice con ese id de depósito.
      */
-    public List<Integer> caminoMinimo(int origen, int destino) {
-        validarVertice(origen);
-        validarVertice(destino);
+    public boolean existeDeposito(int idDeposito) {
+        return dep2Nodo(idDeposito) != null;
+    }
 
-        Map<Integer, Integer> distancias = inicializarDistancias(origen);
-        Map<Integer, Integer> predecesores = new HashMap<>();
-        PriorityQueue<NodoDijkstra> colaPrioridad = new PriorityQueue<>();
-        colaPrioridad.offer(new NodoDijkstra(origen, 0));
+    // ---------------------------------------------------------------
+    // Operaciones sobre aristas (rutas)
+    // ---------------------------------------------------------------
 
-        for (int id : listaAdyacencia.keySet()) predecesores.put(id, -1);
+    /**
+     * Agrega una ruta (arista) entre dos depósitos con una distancia dada.
+     * Grafo no dirigido: se agrega en ambas direcciones.
+     */
+    public void agregarRuta(int idOrigen, int idDestino, int distancia) {
+        NodoGrafo n1 = dep2Nodo(idOrigen);
+        NodoGrafo n2 = dep2Nodo(idDestino);
 
-        while (!colaPrioridad.isEmpty()) {
-            NodoDijkstra actual = colaPrioridad.poll();
+        if (n1 == null || n2 == null)
+            throw new IllegalArgumentException("Uno o ambos depósitos no existen en el grafo.");
 
-            if (actual.distancia > distancias.get(actual.id)) continue;
-            if (actual.id == destino) break;
+        insertarArista(n1, n2, distancia);
+        insertarArista(n2, n1, distancia); // no dirigido
+    }
 
-            for (Arista arista : listaAdyacencia.get(actual.id)) {
-                int nuevaDist = distancias.get(actual.id) + arista.peso;
-                if (nuevaDist < distancias.get(arista.destino)) {
-                    distancias.put(arista.destino, nuevaDist);
-                    predecesores.put(arista.destino, actual.id);
-                    colaPrioridad.offer(new NodoDijkstra(arista.destino, nuevaDist));
-                }
+    /**
+     * Elimina la ruta entre dos depósitos (en ambas direcciones).
+     */
+    public void eliminarRuta(int idOrigen, int idDestino) {
+        NodoGrafo n1 = dep2Nodo(idOrigen);
+        NodoGrafo n2 = dep2Nodo(idDestino);
+        if (n1 != null) eliminarAristaNodo(n1, idDestino);
+        if (n2 != null) eliminarAristaNodo(n2, idOrigen);
+    }
+
+    /**
+     * Devuelve true si existe una ruta directa entre los dos depósitos.
+     */
+    public boolean existeRuta(int idOrigen, int idDestino) {
+        NodoGrafo n1 = dep2Nodo(idOrigen);
+        if (n1 == null) return false;
+        NodoArista aux = n1.arista;
+        while (aux != null && aux.nodoDestino.deposito.getId() != idDestino)
+            aux = aux.sigArista;
+        return aux != null;
+    }
+
+    /**
+     * Devuelve la distancia de la ruta entre dos depósitos.
+     * Lanza excepción si no existe la ruta.
+     */
+    public int distanciaRuta(int idOrigen, int idDestino) {
+        NodoGrafo n1 = dep2Nodo(idOrigen);
+        if (n1 == null)
+            throw new IllegalArgumentException("Depósito origen no existe.");
+        NodoArista aux = n1.arista;
+        while (aux != null && aux.nodoDestino.deposito.getId() != idDestino)
+            aux = aux.sigArista;
+        if (aux == null)
+            throw new IllegalArgumentException("No existe ruta entre " + idOrigen + " y " + idDestino);
+        return aux.distancia;
+    }
+
+    // ---------------------------------------------------------------
+    // Consultas generales
+    // ---------------------------------------------------------------
+
+    /**
+     * Imprime por consola todos los depósitos y sus rutas directas.
+     */
+    public void mostrarGrafo() {
+        NodoGrafo nodo = origen;
+        while (nodo != null) {
+            System.out.print(nodo.deposito + " -> ");
+            NodoArista arista = nodo.arista;
+            while (arista != null) {
+                System.out.print("[" + arista.nodoDestino.deposito + ", dist=" + arista.distancia + "] ");
+                arista = arista.sigArista;
             }
-        }
-
-        return reconstruirCamino(predecesores, origen, destino);
-    }
-
-    // ─────────────────────────────────────────────
-    //  Helpers privados
-    // ─────────────────────────────────────────────
-
-    private Map<Integer, Integer> inicializarDistancias(int origen) {
-        Map<Integer, Integer> dist = new HashMap<>();
-        for (int id : listaAdyacencia.keySet()) dist.put(id, Integer.MAX_VALUE);
-        dist.put(origen, 0);
-        return dist;
-    }
-
-    private void relajarVecinos(NodoDijkstra actual,
-                                Map<Integer, Integer> distancias,
-                                PriorityQueue<NodoDijkstra> cola) {
-        for (Arista arista : listaAdyacencia.get(actual.id)) {
-            if (distancias.get(actual.id) == Integer.MAX_VALUE) continue;
-            int nuevaDist = distancias.get(actual.id) + arista.peso;
-            if (nuevaDist < distancias.get(arista.destino)) {
-                distancias.put(arista.destino, nuevaDist);
-                cola.offer(new NodoDijkstra(arista.destino, nuevaDist));
-            }
+            System.out.println();
+            nodo = nodo.sigNodo;
         }
     }
 
-    private List<Integer> reconstruirCamino(Map<Integer, Integer> predecesores,
-                                            int origen, int destino) {
-        LinkedList<Integer> camino = new LinkedList<>();
-        int actual = destino;
+    // ---------------------------------------------------------------
+    // Métodos privados auxiliares
+    // ---------------------------------------------------------------
 
-        while (actual != -1) {
-            camino.addFirst(actual);
-            if (actual == origen) break;
-            actual = predecesores.getOrDefault(actual, -1);
+    /**
+     * Busca y devuelve el NodoGrafo correspondiente al id de depósito dado.
+     * Devuelve null si no existe.
+     */
+    private NodoGrafo dep2Nodo(int idDeposito) {
+        NodoGrafo aux = origen;
+        while (aux != null && aux.deposito.getId() != idDeposito)
+            aux = aux.sigNodo;
+        return aux;
+    }
+
+    /**
+     * Inserta una arista desde el nodo origen hacia el nodo destino con la distancia dada.
+     * Se inserta al inicio de la lista de aristas del nodo origen.
+     */
+    private void insertarArista(NodoGrafo nodoOrigen, NodoGrafo nodoDestino, int distancia) {
+        NodoArista nueva = new NodoArista();
+        nueva.distancia = distancia;
+        nueva.nodoDestino = nodoDestino;
+        nueva.sigArista = nodoOrigen.arista;
+        nodoOrigen.arista = nueva;
+    }
+
+    /**
+     * Elimina la arista del nodo dado que apunta al depósito con idDestino.
+     * Si no existe, no hace nada.
+     */
+    private void eliminarAristaNodo(NodoGrafo nodo, int idDestino) {
+        NodoArista aux = nodo.arista;
+        if (aux == null) return;
+
+        // Caso especial: la arista a eliminar es la primera
+        if (aux.nodoDestino.deposito.getId() == idDestino) {
+            nodo.arista = aux.sigArista;
+            return;
         }
 
-        if (camino.isEmpty() || camino.getFirst() != origen) {
-            return Collections.emptyList();
-        }
-        return camino;
+        // Caso general: recorrer hasta encontrarla
+        while (aux.sigArista != null && aux.sigArista.nodoDestino.deposito.getId() != idDestino)
+            aux = aux.sigArista;
+
+        // Si la encontró, la elimina por circunvalación
+        if (aux.sigArista != null)
+            aux.sigArista = aux.sigArista.sigArista;
     }
-
-    private void validarVertice(int id) {
-        if (!listaAdyacencia.containsKey(id)) {
-            throw new IllegalArgumentException("El depósito con ID " + id + " no existe en el grafo.");
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    //  Utilidades de visualización
-    // ─────────────────────────────────────────────
-
-    /** Imprime la lista de adyacencia completa del grafo. */
-    public void imprimirGrafo() {
-        System.out.println("=== Red de Rutas (Lista de Adyacencia) ===");
-        listaAdyacencia.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> {
-                    System.out.print("  Depósito " + entry.getKey() + " → ");
-                    entry.getValue().forEach(a ->
-                            System.out.print("[Dep." + a.destino + ", " + a.peso + "km] "));
-                    System.out.println();
-                });
-    }
-
-    public Set<Integer> getVertices() {
-        return Collections.unmodifiableSet(listaAdyacencia.keySet());
-    }
-
-    // Ejercicios
-
-    /*
-    [BFS] G1. Recorrido BFS desde un depósito
-    Implementá un recorrido BFS desde un idDeposito dado e imprimí el orden de visita.
-    Nota: Marcá los nodos visitados para evitar ciclos. Indicá la complejidad.
-     */
-
-    /*
-    [BFS] G2. Cantidad de saltos entre depósitos
-    Implementá cantidadSaltos(int origen, int destino) que retorne la cantidad mínima de saltos entre dos depósitos.
-    Nota: BFS garantiza el mínimo de saltos. ¿Por qué DFS no lo garantiza?
-     */
-
-    /*
-    [BFS] G3. Depósitos a distancia N saltos
-    Implementá depositosADistancia(int origen, int n) que retorne todos los depósitos a exactamente N saltos del origen.
-    Nota: Usá BFS con control de nivel. ¿Cuál es la complejidad en V y E?
-     */
-
-    /*
-    [BFS] G4. Verificar conexión entre depósitos
-    Implementá estaConectado(int origen, int destino) que retorne true si existe algún camino entre los dos depósitos.
-    Nota: ¿Qué representa que el grafo no sea conexo en el contexto logístico?
-     */
-
-    /*
-    [BFS] G5. Camino más corto con distancia
-    Extendé cantidadSaltos para que, en un grafo ponderado, retorne la distancia mínima en km entre dos depósitos (Dijkstra simplificado con cola de prioridad).
-    Nota: ¿Qué diferencia hay entre minimizar saltos y minimizar distancia?
-     */
-
-    /*
-    [DFS] G6. Recorrido DFS desde un depósito
-    Implementá un recorrido DFS (iterativo con Stack o recursivo) desde un idDeposito dado e imprimí el orden de visita.
-    Nota: ¿En qué se diferencia el orden de visita respecto al BFS?
-     */
-
-    /*
-    [DFS] G7. Detectar ciclo en el grafo
-    Implementá tieneCiclo() que retorne true si el grafo contiene algún ciclo, usando DFS.
-    Nota: Usá tres estados: NO_VISITADO, EN_PROCESO, VISITADO.
-     */
-
-    /*
-    [DFS] G8. Imprimir todos los caminos
-    Implementá imprimirCaminos(int origen, int destino) que imprima todos los caminos simples entre dos depósitos usando DFS con backtracking.
-    Nota: Usá una lista para acumular el camino actual y backtrack al salir.
-     */
-
-    /*
-    [DFS] G9. Verificar si el grafo es conexo
-    Implementá esConexo() que retorne true si todos los depósitos son alcanzables desde cualquier nodo inicial.
-    Nota: Si visitados == total de nodos → conexo.
-     */
-
-    /*
-    [DFS] G10. Componentes conexas
-    Implementá cantidadComponentesConexas() que retorne cuántas componentes conexas tiene el grafo.
-    Nota: Iterar sobre nodos no visitados y lanzar DFS desde cada uno.
-     */
-
 }

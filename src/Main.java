@@ -17,11 +17,11 @@ public class Main {
 
         // Reporte por niveles
         System.out.println("=== REPORTE POR NIVELES ===");
-        arbol.imprimirTodosLosNiveles();
+        //arbol.imprimirTodosLosNiveles();
 
         // Auditoría: marca los depósitos no auditados en los últimos 30 días
         // (todos, porque fechaUltimaAuditoria es null en todos)
         System.out.println("\n=== AUDITORÍA ===");
-        arbol.auditarPendientes();
+        //arbol.auditarPendientes();
     }
 }

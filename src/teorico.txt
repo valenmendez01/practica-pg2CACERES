@@ -1,13 +1,22 @@
 Preguntas Teóricas
 
 1. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un árbol binario (sin orden)? Justifica tu respuesta.
+O(n), porque al no estar ordenado puede ser necesario recorrer todos los nodos hasta encontrar el valor o comprobar que no existe.
 
 2. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un ABB balanceado? ¿Por qué mejora respecto al caso anterior?
+O(log n), porque el árbol está ordenado y balanceado, permitiendo descartar aproximadamente la mitad de los nodos en cada comparación.
 
 3. [ABB] ¿Qué complejidad temporal tiene la búsqueda en un ABB desbalanceado (peor caso)? ¿Cuándo ocurre este escenario?
+O(n), porque el árbol puede degenerarse en una lista enlazada. Ocurre, por ejemplo, cuando los elementos se insertan ya ordenados.
 
 4. [Grafos] ¿Qué es un grafo ponderado? Dá un ejemplo aplicado al sistema LogiUADE.
+Es un grafo donde las aristas tienen un peso o costo asociado. En LogiUADE, el peso podría representar la distancia
+o el tiempo de viaje entre dos centros de distribución.
 
 5. [Grafos] ¿Qué es el recorrido BFS? ¿Qué estructura de datos auxiliar utiliza y por qué?
+BFS (Breadth-First Search) recorre el grafo por niveles, visitando primero los nodos más cercanos al origen.
+Utiliza una cola (queue) porque procesa los nodos en el orden en que fueron descubiertos.
 
 6. [Grafos] ¿Qué es el recorrido DFS? ¿Qué estructura de datos auxiliar utiliza y por qué?
+DFS (Depth-First Search) explora un camino lo más profundo posible antes de retroceder.
+Utiliza una pila (stack), explícita o implícita mediante recursión, para recordar los nodos pendientes de explorar.
