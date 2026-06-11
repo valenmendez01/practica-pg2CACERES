@@ -5,7 +5,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        ABB<Deposito> arbol = new ABB<>();
+        ABB arbol = new ABB();
 
         // Agregar depósitos
         arbol.insertar(new Deposito(10));

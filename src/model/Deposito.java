@@ -25,9 +25,4 @@ public class Deposito implements Comparable<Deposito> {
          */
         return Integer.compare(this.id, otro.id);
     }
-
-    @Override
-    public String toString() {
-        return "Deposito{id=" + id + "}";
-    }
 }
